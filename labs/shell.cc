@@ -2,17 +2,41 @@
 #include "labs/vgatext.h"
 
 
-// static char* append(char a[] ,int al, char* b, int bl){
-//   // int a1 = sizeof(a);
-//   // int a2 = sizeof(b);
-//   for(int i = 0; i< bl; i++){
-//     a[al] = b[i];
-//     al++;
-//   }
-//   // a[al] = '\0';
-//   return a;
-// }
 static void getResult(shellstate_t &state);
+
+// bool isEqual(char a[] , int a1, char b[]){
+//   bool started = false,check = true;
+//   int ind = 0;
+//   for (int j = 0 ; j < a1; j++){
+//     if (a[j] == ' ' and started == false){
+//       ind = 0;
+//       check  = false;
+//       continue;
+//     }else if (a[j] == b[ind]){
+//       ind++;
+//       started  = true;
+//       check = true;
+//     }else if (a[j] != b[ind]){
+//       check = false;
+//       break;
+//     }
+//   }
+//   return check;
+// }
+
+bool isEqual(char a[] , int a1, char b[], int b1){
+  bool started = false,check = true;
+  int ind = 0;
+  for (int j = 0 ; j < b1; j++){
+    if (a[j] == b[j]){
+      continue;
+    }else{
+      check = false;
+      break;
+    }
+  }
+  return check;
+}
 
 //
 // initialize shellstate
@@ -20,6 +44,7 @@ static void getResult(shellstate_t &state);
 void shell_init(shellstate_t& state){
   state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
   state.comm_buffer[0]='$';
+  state.comm_buffer_end = 1;
 }
 
 //
@@ -114,7 +139,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
-  if (a.kp ==0 || b.kp == 0){
+  if (a.kp == 0 || b.kp == 0){
     return false;
   }
   if (a.kp == b.kp){
@@ -180,8 +205,31 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 }
 
 static void getResult(shellstate_t &state){
-  state.buffer[state.buffer_end] = '?';
-  state.buffer_end++;
+  char line[80];
+  int line_end = 0;
+  for ( int i = 0; i < state.comm_buffer_end; i++){
+    if (state.comm_buffer[i] == ' '){
+        if (isEqual(line,line_end,"echo",4)){
+          bool s = false;
+          for(int j = i ; j < state.comm_buffer_end; j++){
+            if (state.comm_buffer[j] ==' ' && s == false){
+              continue;
+            }else{
+              s = true;
+              state.buffer[state.buffer_end] = state.comm_buffer[j];
+              state.buffer_end++;
+            }
+          }
+          break;
+        }
+      }else{
+        line[line_end] = state.comm_buffer[i];
+        line_end++;
+      }
+    }
+
+  // state.buffer[state.buffer_end] = '?';
+  // state.buffer_end++;
 }
 
 
