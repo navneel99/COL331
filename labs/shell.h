@@ -3,9 +3,19 @@
 #include "util/debug.h"
 
 struct shellstate_t{
+    char* keymap;
+    int kp = 0;
+    char buffer[1024];
+    char newkey;
+    int end = 0;
+    
+
 };
 
 struct renderstate_t{
+    char buffer[1024];
+    int kp;
+    int end;
 };
 
 void shell_init(shellstate_t& state);

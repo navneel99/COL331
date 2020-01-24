@@ -1,10 +1,23 @@
 #include "labs/shell.h"
 #include "labs/vgatext.h"
 
+
+// static char* append(char a[] ,int al, char* b, int bl){
+//   // int a1 = sizeof(a);
+//   // int a2 = sizeof(b);
+//   for(int i = 0; i< bl; i++){
+//     a[al] = b[i];
+//     al++;
+//   }
+//   // a[al] = '\0';
+//   return a;
+// }
+
 //
 // initialize shellstate
 //
 void shell_init(shellstate_t& state){
+  state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
 }
 
 //
@@ -39,15 +52,26 @@ void shell_init(shellstate_t& state){
 // - for example, you may want to handle up(0x48),down(0x50) arrow keys for menu.
 //
 void shell_update(uint8_t scankey, shellstate_t& stateinout){
+    char k = (stateinout).keymap[unsigned(scankey)];
+    stateinout.newkey = k;
+    stateinout.buffer[stateinout.end] = k;
+    stateinout.end = stateinout.end +1;
+    stateinout.kp= stateinout.kp + 1;
+    // stateinout.buffer = append(stateinout.buffer,stateinout.end,"Good",4);
+    // stateinout.end+=4;
 
-    hoh_debug("Got: "<<unsigned(scankey));
 }
+
 
 
 //
 // do computation
 //
 void shell_step(shellstate_t& stateinout){
+  if (stateinout.buffer[stateinout.end-1] == '?'){
+    //Do some stuff
+    stateinout.end = 0;
+  }
 
   //
   //one way:
@@ -63,6 +87,11 @@ void shell_step(shellstate_t& stateinout){
 // shellstate --> renderstate
 //
 void shell_render(const shellstate_t& shell, renderstate_t& render){
+  render.kp = shell.kp;
+  for (int i = 0; i < shell.end; i++){
+    render.buffer[i] = shell.buffer[i];
+  }
+  render.end = shell.end;
 
   //
   // renderstate. number of keys pressed = shellstate. number of keys pressed
@@ -80,6 +109,10 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
+  if (a.kp == b.kp){
+    return true;
+  }
+  return false;
 }
 
 
@@ -87,11 +120,18 @@ static void fillrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int
 static void drawrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawtext(int x,int y, const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
+static void drawnumberindec(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
+
+
+
 
 //
 // Given a render state, we need to write it into vgatext buffer
 //
 void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
+  //Keeps the Counter
+  drawnumberindec(76,0, state.kp, 8, 0, 2, w, h, vgatext_base);
+
 
 
   // this is just an example:
@@ -167,4 +207,14 @@ static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, 
 
   drawtext(x,y,a,maxw,bg,fg,w,h,vgatext_base);
 }
+static void drawnumberindec(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
+  enum {max=4};
+  char a[max];
+  for(int i=0;i<max-1;i++){
+    a[max-1-i-1]=hex2char(number%10);
+    number=number/10;
+  }
+  a[max-1]='\0';
 
+  drawtext(x,y,a,maxw,bg,fg,w,h,vgatext_base);
+}
