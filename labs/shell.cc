@@ -173,7 +173,6 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 // Given a render state, we need to write it into vgatext buffer
 //
 void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
-  //Keeps the Counter
   if (state.to_clear == true){
     fillrect(0,0,80,25,0,2,w,h,vgatext_base);
   }
