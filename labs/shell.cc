@@ -190,8 +190,8 @@ int char2int(char num[], int l ){
   for(int j = 0; j<l-1;j++){
     e*=10;
   }
-  hoh_debug("e: "<<e);
-  hoh_debug("num: "<<num);
+  // hoh_debug("e: "<<e);
+  // hoh_debug("num: "<<num);
   int n = 0;
   for(int j = 0; j < l; j++){
     n+= (( (int)num[j] - '0') * e);
@@ -282,6 +282,17 @@ static void getResult(shellstate_t &state){
             }
           }
           hoh_debug((fibo(char2int(num,n))));
+          int ans = fibo(char2int(num,n));
+          int e = 1;
+          while(n!=1){
+            e*=10;
+          }
+          while(ans !=0){
+            state.buffer[state.buffer_end] = hex2char(ans%e);
+            state.buffer_end++;
+            ans%=e;
+            e/=10;
+          }
         }
       }else if(isEqual(line,line_end,"clear",5)){
         state.to_clear = true;
