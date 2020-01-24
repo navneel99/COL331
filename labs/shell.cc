@@ -43,8 +43,8 @@ bool isEqual(char a[] , int a1, char b[], int b1){
 //
 void shell_init(shellstate_t& state){
   state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
-  state.comm_buffer[0]='$';
-  state.comm_buffer_end = 1;
+  state.buffer[0]='$';
+  state.buffer_end = 1;
 }
 
 //
@@ -84,7 +84,6 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
     stateinout.comm_buffer[stateinout.comm_buffer_end] = k;
     stateinout.comm_buffer_end = stateinout.comm_buffer_end +1;
     stateinout.kp= stateinout.kp + 1;
-    // stateinout.to_clear = false;
 }
 
 
@@ -95,25 +94,23 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
 // do computation
 //
 void shell_step(shellstate_t& stateinout){
+  stateinout.to_clear = false;
   if (stateinout.newkey == '?'){ //Enter pressed
     for ( int i = 0; i< stateinout.comm_buffer_end; i++){
       stateinout.buffer[stateinout.buffer_end] = stateinout.comm_buffer[i];
       stateinout.buffer_end++;
     }
     getResult(stateinout); //adds the answer to the comm_buffer
-    stateinout.to_clear == false;
-    // if (stateinout.to_clear == true){
-    //   stateinout.buffer_end = 1;
-    //   stateinout.comm_buffer_end = 0;
-    //   stateinout.buffer[0] = '$';
-    // }else{
-    // hoh_debug("Testing not in to_clear");
-    // stateinout.to_clear = false;
+    if (stateinout.to_clear == true){
+      stateinout.buffer_end = 0;
+      stateinout.comm_buffer_end = 0;
+      // stateinout.buffer[0] = '$';
+    }else{
     stateinout.buffer[stateinout.buffer_end] = '$';
     stateinout.buffer_end+=1;
     stateinout.comm_buffer_end = 0;
     stateinout.newkey=' '; //change this value
-    // }
+    }
   }
 }
 
@@ -125,8 +122,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.kp = shell.kp;
   render.buffer_end = shell.buffer_end;
   render.comm_buffer_end = shell.comm_buffer_end;
-  // render.to_clear = shell.to_clear;
-  // render.to_clear = false;
+  render.to_clear = shell.to_clear;
   for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
@@ -151,7 +147,8 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
-  if (a.kp == 0 || b.kp == 0){
+  
+  if (a.kp == 0 || b.kp == 0 || a.buffer_end==0){
     return false;
   }
   if (a.kp == b.kp){
@@ -177,10 +174,10 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 //
 void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
   //Keeps the Counter
+  if (state.to_clear == true){
+    fillrect(0,0,80,25,0,2,w,h,vgatext_base);
+  }
   drawnumberindec(76,0, state.kp, 8, 0, 2, w, h, vgatext_base);
-  // if (state.to_clear == true){
-  //   fillrect(0,0,80,25,1,2,w,h,vgatext_base);
-  // }
   renderShell(state,w,h,vgatext_base);
 }
 
@@ -190,8 +187,6 @@ int char2int(char num[], int l ){
   for(int j = 0; j<l-1;j++){
     e*=10;
   }
-  // hoh_debug("e: "<<e);
-  // hoh_debug("num: "<<num);
   int n = 0;
   for(int j = 0; j < l; j++){
     n+= (( (int)num[j] - '0') * e);
@@ -219,6 +214,16 @@ int fibo(int a){
     // t[k] = t[k-1]+t[k-2];
   }
   return t[2];
+}
+
+bool prime(int n){
+  
+  for (int j = 2; j <n;j++){
+    if (n%j == 0){
+      return false;
+    }
+  }
+  return true;
 }
 
 //
@@ -254,9 +259,9 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 }
 
 static void getResult(shellstate_t &state){
-  char line[80];
+  char line[80]="";
   int line_end = 0;
-  state.to_clear = false;
+  bool ok = false;
   for ( int i = 0; i < state.comm_buffer_end; i++){
     if (state.comm_buffer[i] == ' '){
         if (isEqual(line,line_end,"echo",4)){
@@ -272,6 +277,7 @@ static void getResult(shellstate_t &state){
           }
           break;
         }else if (isEqual(line, line_end,"fib",3)){
+          ok = true;
           char num[10]; 
           int n = 0;
           bool s = false;
@@ -286,7 +292,6 @@ static void getResult(shellstate_t &state){
               continue;
             }
           }
-          // hoh_debug((fibo(char2int(num,n))));
           int ans = fibo(char2int(num,n));
           int e = 1;
           int ans2 = ans;
@@ -294,25 +299,59 @@ static void getResult(shellstate_t &state){
             e*=10;
             ans2/=10;
           }
-          hoh_debug(ans);
-          hoh_debug(e);
           while(ans !=0){
             state.buffer[state.buffer_end] = hex2char(ans/e);
             state.buffer_end++;
             ans%=e;
             e/=10;
           }
+        }else if (isEqual(line, line_end, "prime",5 )){
+          ok = true;
+          char num[20]; 
+          int n = 0;
+          bool s = false;
+          for ( int j = i+1; j<state.comm_buffer_end; j++){
+            if (state.comm_buffer[j] != ' ' && state.comm_buffer[j] != '?'){
+              s = true;
+              num[n] = state.comm_buffer[j];
+              n++;
+            }else if (s == true){
+              break;
+            }else{
+              continue;
+            }
+          }
+          bool ans = prime(char2int(num,n));
+          if (ans){
+            char pr[13] = "It is prime.";
+            for (int j = 0; j < 13; j++){
+              state.buffer[state.buffer_end] = pr[j];
+              state.buffer_end++;
+            }
+          }else{
+            char pr[10] = "Not Prime";
+            for (int j = 0; j < 10; j++){
+              state.buffer[state.buffer_end] = pr[j];
+              state.buffer_end++;
+            }
+
+          }
+
         }
       }else if(isEqual(line,line_end,"clear",5)){
+        ok = true;
         state.to_clear = true;
         break;
       }else{
-        line[line_end] = state.comm_buffer[i];
-        line_end++;
+        line[i] = state.comm_buffer[i];
       }
     }
-  // state.buffer[state.buffer_end] = '?';
-  // state.buffer_end++;
+  if (ok){
+    state.buffer[state.buffer_end] = '?';
+    state.buffer_end++;
+  }
+
+  
 }
 
 

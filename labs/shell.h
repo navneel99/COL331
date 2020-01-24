@@ -8,8 +8,8 @@ struct shellstate_t{
     char comm_buffer[1024];
     char buffer[1024];
     char newkey;
-    int buffer_end = 0;
-    int comm_buffer_end = 1;
+    int buffer_end;
+    int comm_buffer_end = 0;
     bool to_clear = false;
 };
 
