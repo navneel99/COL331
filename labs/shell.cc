@@ -204,16 +204,21 @@ int char2int(char num[], int l ){
 
 int fibo(int a){
   int m = m>2?m:2;
-  int t[m];
+  int t[3];
   t[0] = 0;
   t[1] = 1;
-  if (a<2){
+  t[2] = 1;
+  if (a<3){
     return t[a];
   }
-  for (int k = 2; k<a;k++){
-    t[k] = t[k-1]+t[k-2];
+  for (int k = 3; k<=a;k++){
+    int tmp = t[1]+t[2];
+    t[0] = t[1];
+    t[1] = t[2];
+    t[2] = tmp;
+    // t[k] = t[k-1]+t[k-2];
   }
-  return t[a-1];
+  return t[2];
 }
 
 //
@@ -281,14 +286,18 @@ static void getResult(shellstate_t &state){
               continue;
             }
           }
-          hoh_debug((fibo(char2int(num,n))));
+          // hoh_debug((fibo(char2int(num,n))));
           int ans = fibo(char2int(num,n));
           int e = 1;
-          while(n!=1){
+          int ans2 = ans;
+          while(ans2!=0){
             e*=10;
+            ans2/=10;
           }
+          hoh_debug(ans);
+          hoh_debug(e);
           while(ans !=0){
-            state.buffer[state.buffer_end] = hex2char(ans%e);
+            state.buffer[state.buffer_end] = hex2char(ans/e);
             state.buffer_end++;
             ans%=e;
             e/=10;
