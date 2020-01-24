@@ -84,6 +84,7 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
     stateinout.comm_buffer[stateinout.comm_buffer_end] = k;
     stateinout.comm_buffer_end = stateinout.comm_buffer_end +1;
     stateinout.kp= stateinout.kp + 1;
+    stateinout.to_clear = false;
 }
 
 
@@ -100,10 +101,16 @@ void shell_step(shellstate_t& stateinout){
       stateinout.buffer_end++;
     }
     getResult(stateinout); //adds the answer to the comm_buffer
+    if (stateinout.to_clear == true){
+      stateinout.buffer_end = 0;
+      stateinout.comm_buffer_end = 0;
+      stateinout.comm_buffer[0] = '$';
+    }else{
     stateinout.buffer[stateinout.buffer_end] = '$';
     stateinout.buffer_end+=1;
     stateinout.comm_buffer_end = 0;
     stateinout.newkey=' '; //change this value
+    }
   }
 }
 
@@ -115,6 +122,11 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.kp = shell.kp;
   render.buffer_end = shell.buffer_end;
   render.comm_buffer_end = shell.comm_buffer_end;
+  if (render.to_clear){
+    render.to_clear = false;
+  }else{
+  render.to_clear = shell.to_clear;
+  }
   for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
@@ -166,9 +178,10 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
   //Keeps the Counter
   drawnumberindec(76,0, state.kp, 8, 0, 2, w, h, vgatext_base);
-
+  if (state.to_clear == true){
+    fillrect(0,0,80,25,0,2,w,h,vgatext_base);
+  }
   renderShell(state,w,h,vgatext_base);
-
 }
 
 
@@ -222,12 +235,18 @@ static void getResult(shellstate_t &state){
           }
           break;
         }
+      }else if(isEqual(line,line_end,"clear",5)){
+        if (state.to_clear == true){
+          state.to_clear =false;
+        }else{
+        state.to_clear = true;
+        }
+        break;
       }else{
         line[line_end] = state.comm_buffer[i];
         line_end++;
       }
     }
-
   // state.buffer[state.buffer_end] = '?';
   // state.buffer_end++;
 }

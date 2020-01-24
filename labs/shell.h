@@ -10,7 +10,7 @@ struct shellstate_t{
     char newkey;
     int buffer_end = 0;
     int comm_buffer_end = 1;
-
+    bool to_clear = false;
 };
 
 struct renderstate_t{
@@ -20,6 +20,7 @@ struct renderstate_t{
     char newkey;
     int buffer_end;
     int comm_buffer_end;
+    bool to_clear = false;
 };
 
 void shell_init(shellstate_t& state);
