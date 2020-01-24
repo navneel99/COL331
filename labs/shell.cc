@@ -12,12 +12,14 @@
 //   // a[al] = '\0';
 //   return a;
 // }
+static void getResult(shellstate_t &state);
 
 //
 // initialize shellstate
 //
 void shell_init(shellstate_t& state){
   state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
+  state.comm_buffer[0]='$';
 }
 
 //
@@ -54,13 +56,12 @@ void shell_init(shellstate_t& state){
 void shell_update(uint8_t scankey, shellstate_t& stateinout){
     char k = (stateinout).keymap[unsigned(scankey)];
     stateinout.newkey = k;
-    stateinout.buffer[stateinout.end] = k;
-    stateinout.end = stateinout.end +1;
+    stateinout.comm_buffer[stateinout.comm_buffer_end] = k;
+    stateinout.comm_buffer_end = stateinout.comm_buffer_end +1;
     stateinout.kp= stateinout.kp + 1;
-    // stateinout.buffer = append(stateinout.buffer,stateinout.end,"Good",4);
-    // stateinout.end+=4;
-
 }
+
+
 
 
 
@@ -68,18 +69,17 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
 // do computation
 //
 void shell_step(shellstate_t& stateinout){
-  if (stateinout.buffer[stateinout.end-1] == '?'){
-    //Do some stuff
-    stateinout.end = 0;
+  if (stateinout.newkey == '?'){ //Enter pressed
+    for ( int i = 0; i< stateinout.comm_buffer_end; i++){
+      stateinout.buffer[stateinout.buffer_end] = stateinout.comm_buffer[i];
+      stateinout.buffer_end++;
+    }
+    getResult(stateinout); //adds the answer to the comm_buffer
+    stateinout.buffer[stateinout.buffer_end] = '$';
+    stateinout.buffer_end+=1;
+    stateinout.comm_buffer_end = 0;
+    stateinout.newkey=' '; //change this value
   }
-
-  //
-  //one way:
-  // if a function is enabled in stateinout
-  //   call that function( with arguments stored in stateinout) ;
-//stateinout.args[0] = 5;
-//stateinout.args[1] = 5;
-  //
 }
 
 
@@ -88,10 +88,15 @@ void shell_step(shellstate_t& stateinout){
 //
 void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.kp = shell.kp;
-  for (int i = 0; i < shell.end; i++){
+  render.buffer_end = shell.buffer_end;
+  render.comm_buffer_end = shell.comm_buffer_end;
+  for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
-  render.end = shell.end;
+  for(int i  = 0; i < shell.comm_buffer_end; i++){
+    render.comm_buffer[i] = shell.comm_buffer[i];
+  }
+  
 
   //
   // renderstate. number of keys pressed = shellstate. number of keys pressed
@@ -109,6 +114,9 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
+  if (a.kp ==0 || b.kp == 0){
+    return false;
+  }
   if (a.kp == b.kp){
     return true;
   }
@@ -121,6 +129,8 @@ static void drawrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int
 static void drawtext(int x,int y, const char* str, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawnumberinhex(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
 static void drawnumberindec(int x,int y, uint32_t number, int maxw, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base);
+static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext_base);
+
 
 
 
@@ -132,15 +142,7 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
   //Keeps the Counter
   drawnumberindec(76,0, state.kp, 8, 0, 2, w, h, vgatext_base);
 
-
-
-  // this is just an example:
-  //
-  // Please create your own user interface
-  //
-  // You may also have simple command line user interface
-  // or menu based interface or a combination of both.
-  //
+  renderShell(state,w,h,vgatext_base);
 
 }
 
@@ -154,6 +156,34 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
 static void writecharxy(int x, int y, uint8_t c, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
   vgatext::writechar(y*w+x,c,bg,fg,vgatext_base);
 }
+
+
+static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext_base){
+  int y = 1;
+  int x = 0;
+  for (int i = 0; i < state.buffer_end; i++){
+    char ch = state.buffer[i]; 
+    if (ch == '?'){
+      y++;
+      x=0;
+      writecharxy(x,y,' ',0,2,w,h,vgatext_base);
+    }else{
+      writecharxy(x,y,ch,0,2,w,h,vgatext_base);
+      x++;
+    }
+  }
+  for(int i  =0; i < state.comm_buffer_end; i++){
+    char ch = state.comm_buffer[i];
+    writecharxy(x,y,ch,0,2,w,h,vgatext_base);
+    x++;
+  }
+}
+
+static void getResult(shellstate_t &state){
+  state.buffer[state.buffer_end] = '?';
+  state.buffer_end++;
+}
+
 
 static void fillrect(int x0, int y0, int x1, int y1, uint8_t bg, uint8_t fg, int w, int h, addr_t vgatext_base){
   for(int y=y0;y<y1;y++){
