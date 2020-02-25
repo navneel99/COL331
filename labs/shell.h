@@ -5,12 +5,12 @@
 struct shellstate_t{
     char* keymap;
     int kp = 0;
-    char comm_buffer[1024];
-    char buffer[1024];
-    char newkey;
-    int buffer_end;
-    int comm_buffer_end = 0;
-    bool to_clear = false;
+    char comm_buffer[1024]; //buffer of the current command
+    char buffer[1024]; //buffer of the whole screen
+    char newkey; //The new key
+    int buffer_end; //The end int of the buffre
+    int comm_buffer_end = 0; //The end int of the command
+    bool to_clear = false; //flag to clear or not
 };
 
 struct renderstate_t{

@@ -274,6 +274,7 @@ static void getResult(shellstate_t &state){
               state.buffer_end++;
             }
           }
+          // hoh_debug("echo");
           break;
         }else if (isEqual(line, line_end,"fib",3)){
           ok = true;
@@ -341,16 +342,23 @@ static void getResult(shellstate_t &state){
         ok = true;
         state.to_clear = true;
         break;
+      }else if (isEqual(line,line_end, "help",4)){
+
+            char h_s[]="Welcome to the help section?help to get the help section?echo [string]  to echo the string?fib [num] gets fibonacci for num less than 25?prime [num] to check if a number is prime?clear to clear the screen?";
+            char* p;
+            for (p = h_s; *p !='\0';p++){
+              state.buffer[state.buffer_end++] = *p;
+              // state.buffer_end++;
+            }
+            break;
       }else{
         line[i] = state.comm_buffer[i];
       }
-    }
+  }
   if (ok){
     state.buffer[state.buffer_end] = '?';
     state.buffer_end++;
-  }
-
-  
+  }  
 }
 
 
