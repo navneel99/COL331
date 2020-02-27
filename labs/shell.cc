@@ -257,10 +257,98 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
   }
 }
 
+static int whichFunction(char *line, int length){
+  char all_fun[6][10] = { "echo","fib","prime","fake","help","clear" }; //all possible functions
+  int num_fun = 6;
+  // hoh_debug("Currently in whichFunction");
+  for (int i =0; i<num_fun;i++){
+    char *c_f = all_fun[i];
+    int l=0;
+    char* name="";
+    for(; c_f[l] !='\0';){
+      l++;
+    }
+    if (isEqual(line,length,c_f,l) == true){
+      // hoh_debug("isEqual function returns");
+      // hoh_debug(i);
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+static void extractFunctions(char *command,int command_end, int *fType, char arguments[3][80]){
+  char line[80]="";
+  int line_end=0;
+  bool start_flag = false; //has the program non empty input?
+  bool func_flag=false; // is what we just read a function?
+  bool arg_flag=false;
+  int arg_num=0;
+  char curr_arg[80]="";
+  int arg_l=0;
+
+  for (int i=0;i<command_end;i++){
+    if (command[i] != ' ' && command[i]!='?'){
+      if (func_flag == false && start_flag==true){
+        arg_flag=true;
+      }
+      if (arg_flag){
+        curr_arg[arg_l++]=command[i];
+        curr_arg[arg_l]='\0';
+      }else{
+        line[line_end++]=command[i];
+      }
+      if (start_flag == false){
+        func_flag = true; //only for the first time;
+      }
+      start_flag=true;
+
+    }else if(command[i] == ' '){
+      if (start_flag){
+        if (func_flag){
+          *fType = whichFunction(line,line_end);
+          func_flag = false;
+          line_end=0;
+        }else{
+          arguments[arg_num][arg_l]='\0';
+          for(int j=0;j<arg_l;j++){
+          arguments[arg_num][j] = curr_arg[j];
+          }
+          arg_num++;
+          arg_l=0;
+          curr_arg[arg_l]='\0';
+        }
+      }
+    }else if(command[i] =='?'){
+      if (func_flag){
+          *fType = whichFunction(line,line_end);
+      }
+      if (arg_flag && arg_l !=0){
+        for(int j=0;j<arg_l;j++){
+          arguments[arg_num][j] = curr_arg[j];
+        }
+        arg_num=0;
+        curr_arg[0]='\0';
+        arg_l=0;
+      }
+      break;
+    }
+  }
+}
+
 static void getResult(shellstate_t &state){
   char line[80]="";
   int line_end = 0;
   bool ok = false;
+  int *fun;
+  char args[3][80]={"","",""};
+  extractFunctions(state.comm_buffer,state.comm_buffer_end,fun,args);
+  // hoh_debug("On Enter Press");
+  // hoh_debug(*fun);
+  // hoh_debug(args[0]);
+  // hoh_debug(args[1]);
+  // hoh_debug("Function over.");
   for ( int i = 0; i < state.comm_buffer_end; i++){
     if (state.comm_buffer[i] == ' '){
         if (isEqual(line,line_end,"echo",4)){
@@ -337,13 +425,17 @@ static void getResult(shellstate_t &state){
 
           }
 
-        }
+        }/*else if (isEqual(line,line_end,"fake",4)){
+          bool start_flag = false;
+          for(int j = i+1; j< state.comm_buffer_end;j++){
+            if (state.comm_buffer[j] != ' ')
+          }
+        }*/
       }else if(isEqual(line,line_end,"clear",5)){
         ok = true;
         state.to_clear = true;
         break;
       }else if (isEqual(line,line_end, "help",4)){
-
             char h_s[]="Welcome to the help section?help to get the help section?echo [string]  to echo the string?fib [num] gets fibonacci for num less than 25?prime [num] to check if a number is prime?clear to clear the screen?";
             char* p;
             for (p = h_s; *p !='\0';p++){
