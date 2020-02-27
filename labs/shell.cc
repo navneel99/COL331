@@ -341,18 +341,12 @@ static void extractFunctions(char *command,int command_end, int *fType, char arg
 }
 
 static void getResult(shellstate_t &state){
-  // char line[80]="";
-  // int line_end = 0;
+
   bool ok = false;
   int *fun;
   char args[3][80]={"","",""};
   extractFunctions(state.comm_buffer,state.comm_buffer_end,fun,args);
-  hoh_debug("Clear Code:");
-  hoh_debug(*fun);
-  hoh_debug(state.to_clear);
-  hoh_debug(state.comm_buffer);
-  hoh_debug(state.newkey);
-  // hoh_debug()
+  
   if (*fun == 0){
     bool start = false;
     bool check_space = false;
@@ -416,117 +410,15 @@ static void getResult(shellstate_t &state){
     char* p;
     for (p = h_s; *p !='\0';p++){
       state.buffer[state.buffer_end++] = *p;
-      // state.buffer_end++;
     }
 
   }else if(*fun == 5){ //clear
     ok = true;
     state.to_clear = true;
-    // line[0]='\0';
-    // line_end=0;
   }else{
     state.to_clear=false;
   }
 
-
-  // for ( int i = 0; i < state.comm_buffer_end; i++){
-  //   if (state.comm_buffer[i] == ' '){
-  //       if (isEqual(line,line_end,"echo",4)){
-  //         bool s = false;
-  //         for(int j = i ; j < state.comm_buffer_end; j++){
-  //           if (state.comm_buffer[j] ==' ' && s == false){
-  //             continue;
-  //           }else{
-  //             s = true;
-  //             state.buffer[state.buffer_end] = state.comm_buffer[j];
-  //             state.buffer_end++;
-  //           }
-  //         }
-  //         // hoh_debug("echo");
-  //         break;
-  //       }else if (isEqual(line, line_end,"fib",3)){
-  //         ok = true;
-  //         char num[10]; 
-  //         int n = 0;
-  //         bool s = false;
-  //         for ( int j = i+1; j<state.comm_buffer_end; j++){
-  //           if (state.comm_buffer[j] != ' ' && state.comm_buffer[j] != '?'){
-  //             s = true;
-  //             num[n] = state.comm_buffer[j];
-  //             n++;
-  //           }else if (s == true){
-  //             break;
-  //           }else{
-  //             continue;
-  //           }
-  //         }
-  //         int ans = fibo(char2int(num,n));
-  //         int e = 1;
-  //         int ans2 = ans;
-  //         while(ans2!=0){
-  //           e*=10;
-  //           ans2/=10;
-  //         }
-  //         while(ans !=0){
-  //           state.buffer[state.buffer_end] = hex2char(ans/e);
-  //           state.buffer_end++;
-  //           ans%=e;
-  //           e/=10;
-  //         }
-  //       }else if (isEqual(line, line_end, "prime",5 )){
-  //         ok = true;
-  //         char num[20]; 
-  //         int n = 0;
-  //         bool s = false;
-  //         for ( int j = i+1; j<state.comm_buffer_end; j++){
-  //           if (state.comm_buffer[j] != ' ' && state.comm_buffer[j] != '?'){
-  //             s = true;
-  //             num[n] = state.comm_buffer[j];
-  //             n++;
-  //           }else if (s == true){
-  //             break;
-  //           }else{
-  //             continue;
-  //           }
-  //         }
-  //         bool ans = prime(char2int(num,n));
-  //         if (ans){
-  //           char pr[13] = "It is prime.";
-  //           for (int j = 0; j < 13; j++){
-  //             state.buffer[state.buffer_end] = pr[j];
-  //             state.buffer_end++;
-  //           }
-  //         }else{
-  //           char pr[10] = "Not Prime";
-  //           for (int j = 0; j < 10; j++){
-  //             state.buffer[state.buffer_end] = pr[j];
-  //             state.buffer_end++;
-  //           }
-
-  //         }
-
-  //       }/*else if (isEqual(line,line_end,"fake",4)){
-  //         bool start_flag = false;
-  //         for(int j = i+1; j< state.comm_buffer_end;j++){
-  //           if (state.comm_buffer[j] != ' ')
-  //         }
-  //       }*/
-  //     }else if(isEqual(line,line_end,"clear",5)){
-  //       ok = true;
-  //       state.to_clear = true;
-  //       break;
-  //     }else if (isEqual(line,line_end, "help",4)){
-  //           char h_s[]="Welcome to the help section?help to get the help section?echo [string]  to echo the string?fib [num] gets fibonacci for num less than 25?prime [num] to check if a number is prime?clear to clear the screen?";
-  //           char* p;
-  //           for (p = h_s; *p !='\0';p++){
-  //             state.buffer[state.buffer_end++] = *p;
-  //             // state.buffer_end++;
-  //           }
-  //           break;
-  //     }else{
-  //       line[i] = state.comm_buffer[i];
-  //     }
-  // }
   if (ok){
     state.buffer[state.buffer_end] = '?';
     state.buffer_end++;
