@@ -11,6 +11,9 @@ struct shellstate_t{
     int buffer_end; //The end int of the buffre
     int comm_buffer_end = 0; //The end int of the command
     bool to_clear = false; //flag to clear or not
+    int coroutine_state=0; //dead=0,start=1,ready=2,finished=3
+    int coroutine_arg=0; //argument for the coprime function
+    bool coroutine_result;
 };
 
 struct renderstate_t{
@@ -21,6 +24,10 @@ struct renderstate_t{
     int buffer_end;
     int comm_buffer_end;
     bool to_clear = false;
+    int coroutine_state=0; //dead=0,start=1,ready=2,finished=3
+    int coroutine_arg=0; //argument for the coprime function
+    bool coroutine_result;
+
 };
 
 void shell_init(shellstate_t& state);

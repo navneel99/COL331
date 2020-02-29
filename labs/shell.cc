@@ -106,13 +106,14 @@ void shell_step(shellstate_t& stateinout){
       stateinout.comm_buffer[0]='\0';
       // stateinout.buffer[0] = '$';
     }else{
-    stateinout.buffer[stateinout.buffer_end] = '$';
-    stateinout.buffer_end+=1;
+    stateinout.buffer[stateinout.buffer_end++] = '$';
+    // stateinout.buffer_end+=1;
     stateinout.comm_buffer_end = 0;
     stateinout.comm_buffer[0]='\0';
     stateinout.newkey=' '; //change this value
     }
   }
+
 }
 
 
@@ -124,6 +125,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.buffer_end = shell.buffer_end;
   render.comm_buffer_end = shell.comm_buffer_end;
   render.to_clear = shell.to_clear;
+  render.coroutine_state = shell.coroutine_state;
   for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
@@ -149,13 +151,15 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
   
-  if (a.kp == 0 || b.kp == 0 || a.buffer_end==0){
+  if (a.kp == 0 || b.kp == 0 || a.buffer_end==0 || a.coroutine_state != b.coroutine_state){
     return false;
   }
   if (a.kp == b.kp){
     return true;
   }
-
+  // if (a.coroutine_state != b.coroutine_state){
+  //   return false;
+  // }
   return false;
 }
 
@@ -260,7 +264,7 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 }
 
 static int whichFunction(char *line, int length){
-  char all_fun[6][10] = { "echo","fib","prime","fake","help","clear" }; //all possible functions
+  char all_fun[6][10] = { "echo","fib","prime","coprime","help","clear" }; //all possible functions
   int num_fun = 6;
   // hoh_debug("Currently in whichFunction");
   for (int i =0; i<num_fun;i++){
@@ -402,8 +406,13 @@ static void getResult(shellstate_t &state){
         state.buffer_end++;
       }
     }    
-  }else if(*fun == 3){ //fake function
-  
+  }else if(*fun == 3){ //coprime function
+    hoh_debug("Coprime");
+    state.coroutine_state=1;
+    char* a = args[0];
+    int l=0;
+    for(;a[l] !='\0';l++);
+    state.coroutine_arg=char2int(args[0],l);
   }else if(*fun == 4){ //help
     ok=true;
     char h_s[]="Welcome to the help section?help to get the help section?echo [string]  to echo the string?fib [num] gets fibonacci for num less than 25?prime [num] to check if a number is prime?clear to clear the screen?";
