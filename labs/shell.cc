@@ -24,9 +24,12 @@ static void getResult(shellstate_t &state);
 //   return check;
 // }
 
-bool isEqual(char a[] , int a1, char b[], int b1){
+bool isEqual(char a[] , int a1, char b[], int b1){ //b1 is the minimum length of the gold value(b)
   bool started = false,check = true;
   int ind = 0;
+  if (b1 < a1){
+    return false;
+  }
   for (int j = 0 ; j < b1; j++){
     if (a[j] == b[j]){
       continue;
@@ -126,6 +129,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.comm_buffer_end = shell.comm_buffer_end;
   render.to_clear = shell.to_clear;
   render.coroutine_state = shell.coroutine_state;
+  render.fiber_state = shell.fiber_state;
   for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
@@ -151,7 +155,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
   
-  if (a.kp == 0 || b.kp == 0 || a.buffer_end==0 || a.coroutine_state != b.coroutine_state){
+  if (a.kp == 0 || b.kp == 0 || a.buffer_end==0 || a.coroutine_state != b.coroutine_state || a.fiber_state !=b.fiber_state){
     return false;
   }
   if (a.kp == b.kp){
@@ -264,8 +268,8 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 }
 
 static int whichFunction(char *line, int length){
-  char all_fun[6][10] = { "echo","fib","prime","coprime","help","clear" }; //all possible functions
-  int num_fun = 6;
+  char all_fun[7][10] = { "echo","fib","prime","coprime","help","clear","fibprime" }; //all possible functions
+  int num_fun = 7;
   // hoh_debug("Currently in whichFunction");
   for (int i =0; i<num_fun;i++){
     char *c_f = all_fun[i];
@@ -275,8 +279,6 @@ static int whichFunction(char *line, int length){
       l++;
     }
     if (isEqual(line,length,c_f,l) == true){
-      // hoh_debug("isEqual function returns");
-      // hoh_debug(i);
       return i;
     }
   }
@@ -424,8 +426,15 @@ static void getResult(shellstate_t &state){
   }else if(*fun == 5){ //clear
     ok = true;
     state.to_clear = true;
+  }else if(*fun==6){ //fibprime
+    hoh_debug("Fiber");
+    char *a = args[0];
+    int l=0;
+    for(;a[l] !='\0';l++);
+    state.fiber_state=1;
+    state.fiber_num=char2int(args[0],l);
   }else{
-    state.to_clear=false;
+    state.to_clear=false; //VERY IMPORTANT STATEMENT!! Otherwise won't stop clearing
   }
 
   if (ok){

@@ -11,7 +11,7 @@ void coprime(coroutine_t &f_coro,f_t* f_locals,bool* ret, bool *isDone){
     h_begin(f_coro);
 
     for (i=2;i<num;i++){
-        hoh_debug(i);
+        // hoh_debug(i);
         if (num%i==0){
             *fret = false; //Not a prime
             *done = true;
@@ -21,7 +21,7 @@ void coprime(coroutine_t &f_coro,f_t* f_locals,bool* ret, bool *isDone){
             h_yield(cor);
         }
     }
-    hoh_debug("outside");
+    // hoh_debug("outside");
     *done = true;
     *fret = true;
     h_end(cor);
