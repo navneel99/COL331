@@ -393,6 +393,7 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
   for (int i = 0; i < state.buffer_end; i++){
     char ch = state.buffer[i]; 
     if (ch == '\n'){
+      writecharxy(x,y,' ',0,2,w,h,vgatext_base);
       y++;
       x=0;
       writecharxy(x,y,' ',0,2,w,h,vgatext_base);
@@ -408,7 +409,9 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
   }
   if (state.newkey == 'B'){ //Backspace
     writecharxy(x,y,' ',0,2,w,h,vgatext_base);
+    writecharxy(x+1,y,' ',0,2,w,h,vgatext_base);
   }
+  writecharxy(x,y,'_',0,3,w,h,vgatext_base);
 }
 
 static int whichFunction(char *line, int length){
