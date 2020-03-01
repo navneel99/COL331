@@ -44,8 +44,136 @@ bool isEqual(char a[] , int a1, char b[], int b1){ //b1 is the minimum length of
 //
 // initialize shellstate
 //
+
+void keyMapper(uint8_t scankey,char &k){
+  if (unsigned(scankey) == 0x01){
+    k = 'E';
+  }else if (unsigned(scankey) == 0x02){
+    k = '1';
+  }else if (unsigned(scankey) == 0x03){
+    k = '2';
+  }else if (unsigned(scankey) == 0x04){
+    k = '3';
+  }else if (unsigned(scankey) == 0x05){
+    k = '4';
+  }else if (unsigned(scankey) == 0x06){
+    k = '5';
+  }else if (unsigned(scankey) == 0x07){
+    k = '6';
+  }else if (unsigned(scankey) == 0x08){
+    k = '7';
+  }else if (unsigned(scankey) == 0x09){
+    k = '8';
+  }else if (unsigned(scankey) == 0xa){
+    k = '9';
+  }else if (unsigned(scankey) == 0xb){
+    k = '0';
+  }else if (unsigned(scankey) == 0xc){
+    k = '-';
+  }else if (unsigned(scankey) == 0xd){
+    k = '=';
+  }else if (unsigned(scankey) == 0xe){
+    k = 'B';
+  }else if (unsigned(scankey) == 0xf){
+    k = 'T';
+  }else if (unsigned(scankey) == 0x10){
+    k = 'q';
+  }else if (unsigned(scankey) == 0x11){
+    k = 'w';
+  }else if (unsigned(scankey) == 0x12){
+    k = 'e';
+  }else if (unsigned(scankey) == 0x13){
+    k = 'r';
+  }else if (unsigned(scankey) == 0x14){
+    k = 't';
+  }else if (unsigned(scankey) == 0x15){
+    k = 'y';
+  }else if (unsigned(scankey) == 0x16){
+    k = 'u';
+  }else if (unsigned(scankey) == 0x17){
+    k = 'i';
+  }else if (unsigned(scankey) == 0x18){
+    k = 'o';
+  }else if (unsigned(scankey) == 0x19){
+    k = 'p';
+  }else if (unsigned(scankey) == 0x1a){
+    k = '[';
+  }else if (unsigned(scankey) == 0x1b){
+    k = ']';
+  }else if (unsigned(scankey) == 0x1c){
+    k = '\n';
+  }else if (unsigned(scankey) == 0x1d){
+    k = 'C';
+  }else if (unsigned(scankey) == 0x1e){
+    k = 'a';
+  }else if (unsigned(scankey) == 0x1f){
+    k = 's';
+  }else if (unsigned(scankey) == 0x20){
+    k = 'd';
+  }else if (unsigned(scankey) == 0x21){
+    k = 'f';
+  }else if (unsigned(scankey) == 0x22){
+    k = 'g';
+  }else if (unsigned(scankey) == 0x23){
+    k = 'h';
+  }else if (unsigned(scankey) == 0x24){
+    k = 'j';
+  }else if (unsigned(scankey) == 0x25){
+    k = 'k';
+  }else if (unsigned(scankey) == 0x26){
+    k = 'l';
+  }else if (unsigned(scankey) == 0x27){
+    k = ';';
+  }else if (unsigned(scankey) == 0x28){
+    k = '\'';
+  }else if (unsigned(scankey) == 0x29){
+    k = ' ';
+  }else if (unsigned(scankey) == 0x2a){
+    k = '>';
+  }else if (unsigned(scankey) == 0x2b){
+    k = '\\';
+  }else if (unsigned(scankey) == 0x2c){
+    k = 'z';
+  }else if (unsigned(scankey) == 0x2d){
+    k = 'x';
+  }else if (unsigned(scankey) == 0x2e){
+    k = 'c';
+  }else if (unsigned(scankey) == 0x2f){
+    k = 'v';
+  }else if (unsigned(scankey) == 0x30){
+    k = 'b';
+  }else if (unsigned(scankey) == 0x31){
+    k = 'n';
+  }else if (unsigned(scankey) == 0x32){
+    k = 'm';
+  }else if (unsigned(scankey) == 0x33){
+    k = ',';
+  }else if (unsigned(scankey) == 0x34){
+    k = '.';
+  }else if (unsigned(scankey) == 0x35){
+    k = '/';
+  }else if (unsigned(scankey) == 0x36){
+    k = '<';
+  // }else if (unsigned(scankey) == 0x37){
+  //   k = "";
+  }else if (unsigned(scankey) == 0x38){
+    k = 'A';
+  }else if (unsigned(scankey) == 0x39){
+    k = ' '; //space
+  }else if (unsigned(scankey) == 0x4b){
+    k = 'L';
+  }else if (unsigned(scankey) == 0x48){
+    k = 'U';
+  }else if (unsigned(scankey) == 0x50){
+    k = 'D';
+  }else if (unsigned(scankey) == 0x4d){
+    k = 'R';
+  }
+}
+
+
 void shell_init(shellstate_t& state){
-  state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
+  // state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
   state.buffer[0]='$';
   state.buffer_end = 1;
 }
@@ -82,11 +210,22 @@ void shell_init(shellstate_t& state){
 // - for example, you may want to handle up(0x48),down(0x50) arrow keys for menu.
 //
 void shell_update(uint8_t scankey, shellstate_t& stateinout){
-    char k = (stateinout).keymap[unsigned(scankey)];
+    // char k = (stateinout).keymap[unsigned(scankey)];
+    char k;
+    keyMapper(scankey,k);
     stateinout.newkey = k;
-    stateinout.comm_buffer[stateinout.comm_buffer_end] = k;
-    stateinout.comm_buffer_end = stateinout.comm_buffer_end +1;
-    stateinout.kp= stateinout.kp + 1;
+    if (k != 'B'){
+      stateinout.comm_buffer[stateinout.comm_buffer_end++] = k;
+      stateinout.comm_buffer[stateinout.comm_buffer_end] ='\0';
+    }else{
+      if (stateinout.comm_buffer_end>0){
+      stateinout.comm_buffer[--stateinout.comm_buffer_end]='\0';
+      }else{
+      stateinout.comm_buffer[stateinout.comm_buffer_end]='\0';
+      }
+    }
+    hoh_debug(stateinout.comm_buffer);
+    stateinout.kp++;
 }
 
 
@@ -97,7 +236,7 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
 // do computation
 //
 void shell_step(shellstate_t& stateinout){
-  if (stateinout.newkey == '?'){ //Enter pressed
+  if (stateinout.newkey == '\n'){ //Enter pressed
     for ( int i = 0; i< stateinout.comm_buffer_end; i++){
       stateinout.buffer[stateinout.buffer_end] = stateinout.comm_buffer[i];
       stateinout.buffer_end++;
@@ -116,7 +255,6 @@ void shell_step(shellstate_t& stateinout){
     stateinout.newkey=' '; //change this value
     }
   }
-
 }
 
 
@@ -130,6 +268,7 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.to_clear = shell.to_clear;
   render.coroutine_state = shell.coroutine_state;
   render.fiber_state = shell.fiber_state;
+  render.newkey = shell.newkey;
   for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
@@ -155,15 +294,17 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
   
+
   if (a.kp == 0 || b.kp == 0 || a.buffer_end==0 || a.coroutine_state != b.coroutine_state || a.fiber_state !=b.fiber_state){
     return false;
   }
+  if (a.comm_buffer_end != b.comm_buffer_end){
+    return false;
+  }
+
   if (a.kp == b.kp){
     return true;
   }
-  // if (a.coroutine_state != b.coroutine_state){
-  //   return false;
-  // }
   return false;
 }
 
@@ -251,7 +392,7 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
   int x = 0;
   for (int i = 0; i < state.buffer_end; i++){
     char ch = state.buffer[i]; 
-    if (ch == '?'){
+    if (ch == '\n'){
       y++;
       x=0;
       writecharxy(x,y,' ',0,2,w,h,vgatext_base);
@@ -260,17 +401,19 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
       x++;
     }
   }
-  for(int i  =0; i < state.comm_buffer_end; i++){
+  for(int i=0; i < state.comm_buffer_end; i++){
     char ch = state.comm_buffer[i];
     writecharxy(x,y,ch,0,2,w,h,vgatext_base);
     x++;
+  }
+  if (state.newkey == 'B'){ //Backspace
+    writecharxy(x,y,' ',0,2,w,h,vgatext_base);
   }
 }
 
 static int whichFunction(char *line, int length){
   char all_fun[7][10] = { "echo","fib","prime","coprime","help","clear","fibprime" }; //all possible functions
   int num_fun = 7;
-  // hoh_debug("Currently in whichFunction");
   for (int i =0; i<num_fun;i++){
     char *c_f = all_fun[i];
     int l=0;
@@ -298,7 +441,7 @@ static void extractFunctions(char *command,int command_end, int *fType, char arg
   *fType=-1;
 
   for (int i=0;i<command_end;i++){
-    if (command[i] != ' ' && command[i]!='?'){
+    if (command[i] != ' ' && command[i]!='\n'){
       if (func_flag == false && start_flag==true){
         arg_flag=true;
       }
@@ -329,7 +472,7 @@ static void extractFunctions(char *command,int command_end, int *fType, char arg
           curr_arg[arg_l]='\0';
         }
       }
-    }else if(command[i] =='?'){
+    }else if(command[i] =='\n'){
       if (func_flag){
           *fType = whichFunction(line,line_end);
       }
@@ -409,7 +552,6 @@ static void getResult(shellstate_t &state){
       }
     }    
   }else if(*fun == 3){ //coprime function
-    hoh_debug("Coprime");
     state.coroutine_state=1;
     char* a = args[0];
     int l=0;
@@ -417,7 +559,7 @@ static void getResult(shellstate_t &state){
     state.coroutine_arg=char2int(args[0],l);
   }else if(*fun == 4){ //help
     ok=true;
-    char h_s[]="Welcome to the help section?help to get the help section?echo [string]  to echo the string?fib [num] gets fibonacci for num less than 25?prime [num] to check if a number is prime?clear to clear the screen?";
+    char h_s[]="Welcome to the help section\nhelp to get the help section\necho [string]  to echo the string\nfib [num] gets fibonacci for num less than 25\nprime [num] to check if a number is prime\nclear to clear the screen\n";
     char* p;
     for (p = h_s; *p !='\0';p++){
       state.buffer[state.buffer_end++] = *p;
@@ -427,7 +569,6 @@ static void getResult(shellstate_t &state){
     ok = true;
     state.to_clear = true;
   }else if(*fun==6){ //fibprime
-    hoh_debug("Fiber");
     char *a = args[0];
     int l=0;
     for(;a[l] !='\0';l++);
@@ -438,7 +579,7 @@ static void getResult(shellstate_t &state){
   }
 
   if (ok){
-    state.buffer[state.buffer_end] = '?';
+    state.buffer[state.buffer_end] = '\n';
     state.buffer_end++;
   }
   state.comm_buffer_end=0;

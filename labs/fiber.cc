@@ -48,7 +48,7 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_st
     if (shellstate.fiber_done==true){
       shellstate.fiber_state=0;
       bool temp = shellstate.fiber_ret;
-      char* ans;
+      const char* ans;
       if (temp){
         ans = "Fiber Result: It is prime.";
       }else{
@@ -60,7 +60,7 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_st
         shellstate.buffer[shellstate.buffer_end++]=ans[l];
         l++;
       };
-      shellstate.buffer[shellstate.buffer_end++]='?';
+      shellstate.buffer[shellstate.buffer_end++]='\n';
       shellstate.buffer[shellstate.buffer_end++]='$';
     }
   }

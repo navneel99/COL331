@@ -42,7 +42,7 @@ void shell_step_coroutine(shellstate_t& shellstate, coroutine_t& f_coro, f_t& f_
         if (isDone){
             shellstate.coroutine_result=ret;
             shellstate.coroutine_state=0;
-            char*ans;
+            const char*ans;
             int l=0;
             if (ret){
                 ans = "Coroutine Result: It is prime";
@@ -54,7 +54,7 @@ void shell_step_coroutine(shellstate_t& shellstate, coroutine_t& f_coro, f_t& f_
                 shellstate.buffer[shellstate.buffer_end++]=ans[l];
                 l++;
             }
-            shellstate.buffer[shellstate.buffer_end++]='?';
+            shellstate.buffer[shellstate.buffer_end++]='\n';
             shellstate.buffer[shellstate.buffer_end++]='$';
 
             // for(;ans[l]!='\0';l++);
