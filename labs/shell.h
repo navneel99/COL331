@@ -11,6 +11,8 @@ struct shellstate_t{
     int buffer_end; //The end int of the buffre
     int comm_buffer_end = 0; //The end int of the command
     bool to_clear = false; //flag to clear or not
+    bool show_cursor = true;
+    int cursor_time;
 
     //Stuff for coroutine
     int coroutine_state=0; //dead=0,start=1,ready=2,finished=3
@@ -33,6 +35,7 @@ struct renderstate_t{
     int buffer_end;
     int comm_buffer_end;
     bool to_clear = false;
+    bool show_cursor;
 
     //Stuff for coroutine
     int coroutine_state=0; //dead=0,start=1,ready=2,finished=3

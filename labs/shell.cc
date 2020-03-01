@@ -176,6 +176,7 @@ void shell_init(shellstate_t& state){
   // state.keymap="``1234567890-=+`qwertyuiop[]?`asdfghjkl;'\\``zxcvbnm,./``` ";
   state.buffer[0]='$';
   state.buffer_end = 1;
+  state.cursor_time =1;
 }
 
 //
@@ -255,6 +256,13 @@ void shell_step(shellstate_t& stateinout){
     stateinout.newkey=' '; //change this value
     }
   }
+  int t = 75000;
+  if (stateinout.cursor_time<t){
+    stateinout.show_cursor = true;
+  }else{
+    stateinout.show_cursor = false;
+  }
+  stateinout.cursor_time = (stateinout.cursor_time+1)%(2*t);
 }
 
 
@@ -262,6 +270,7 @@ void shell_step(shellstate_t& stateinout){
 // shellstate --> renderstate
 //
 void shell_render(const shellstate_t& shell, renderstate_t& render){
+  //Taking variables from shell to render
   render.kp = shell.kp;
   render.buffer_end = shell.buffer_end;
   render.comm_buffer_end = shell.comm_buffer_end;
@@ -269,13 +278,22 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
   render.coroutine_state = shell.coroutine_state;
   render.fiber_state = shell.fiber_state;
   render.newkey = shell.newkey;
+
+  render.show_cursor = shell.show_cursor;
+
+  //Copying buffers from shell to render
   for (int i = 0; i < shell.buffer_end; i++){
     render.buffer[i] = shell.buffer[i];
   }
   for(int i  = 0; i < shell.comm_buffer_end; i++){
     render.comm_buffer[i] = shell.comm_buffer[i];
   }
-  
+  // hoh_debug(render.show_cursor);
+  // if (render.show_cursor == true){
+  //   render.show_cursor = false;
+  // }else{
+  //   render.show_cursor = true;
+  // }
 
   //
   // renderstate. number of keys pressed = shellstate. number of keys pressed
@@ -293,7 +311,10 @@ void shell_render(const shellstate_t& shell, renderstate_t& render){
 // compare a and b
 //
 bool render_eq(const renderstate_t& a, const renderstate_t& b){
-  
+
+  if (a.show_cursor != b.show_cursor){
+    return false;
+  }
 
   if (a.kp == 0 || b.kp == 0 || a.buffer_end==0 || a.coroutine_state != b.coroutine_state || a.fiber_state !=b.fiber_state){
     return false;
@@ -327,6 +348,7 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
   if (state.to_clear == true){
     fillrect(0,0,80,25,0,2,w,h,vgatext_base);
   }
+  // hoh_debug(state.show_cursor);
   drawnumberindec(76,0, state.kp, 8, 0, 2, w, h, vgatext_base);
   renderShell(state,w,h,vgatext_base);
 }
@@ -411,7 +433,11 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
     writecharxy(x,y,' ',0,2,w,h,vgatext_base);
     writecharxy(x+1,y,' ',0,2,w,h,vgatext_base);
   }
-  writecharxy(x,y,'_',0,3,w,h,vgatext_base);
+  if(state.show_cursor){
+    writecharxy(x,y,'_',0,3,w,h,vgatext_base);
+  }else{
+    writecharxy(x,y,' ',0,3,w,h,vgatext_base);
+  }
 }
 
 static int whichFunction(char *line, int length){
