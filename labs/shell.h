@@ -25,6 +25,20 @@ struct shellstate_t{
     int fiber_num;
     bool fiber_ret;
 
+    //Stuff for the fiber_scheduler
+
+    int curr_fiber = 0; //fiber which is currently executing.
+    //Fibonacci uses 2 arguments + 1 return value , The Number,isDone? and ret
+    //Factorial uses 2 arguments a+ 1 return value, Number, is done and ret
+    //One more to specify the actual function being called
+    int arg_ret_list[4 * 5]; //(4* i)th index for ith fiber
+    //int exec_q[5]; //list containing which fiber to execute next.
+    //int free_q[5]; //queue telling which'th fiber to allocate next
+    int fiber_states[5]={0,0,0,0,0}; //list with index i telling th state of fiber i
+    //Allowed states 0: DEAD 1: READY 2:RUNNING
+
+
+
 };
 
 struct renderstate_t{
@@ -56,4 +70,8 @@ void shell_render(const shellstate_t& shell, renderstate_t& render);
 
 bool render_eq(const renderstate_t& a, const renderstate_t& b);
 void render(const renderstate_t& state, int w, int h, addr_t display_base);
+
+void int2char(int a,char* ret,int l);
+void addToBuffer(shellstate_t&state,const char* str);
+
 

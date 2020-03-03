@@ -3,6 +3,7 @@
 
 
 static void getResult(shellstate_t &state);
+// void int2char(int a,char* ret,int l);
 
 // bool isEqual(char a[] , int a1, char b[]){
 //   bool started = false,check = true;
@@ -39,6 +40,14 @@ bool isEqual(char a[] , int a1, char b[], int b1){ //b1 is the minimum length of
     }
   }
   return check;
+}
+
+void addToBuffer(shellstate_t&state,const char* str){
+  int l=0;
+  for(;str[l]!=0;){
+    state.buffer[state.buffer_end++]=str[l];
+    l++;
+  }
 }
 
 //
@@ -225,7 +234,7 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
       stateinout.comm_buffer[stateinout.comm_buffer_end]='\0';
       }
     }
-    hoh_debug(stateinout.comm_buffer);
+    // hoh_debug(stateinout.comm_buffer);
     stateinout.kp++;
 }
 
@@ -237,6 +246,7 @@ void shell_update(uint8_t scankey, shellstate_t& stateinout){
 // do computation
 //
 void shell_step(shellstate_t& stateinout){
+
   if (stateinout.newkey == '\n'){ //Enter pressed
     for ( int i = 0; i< stateinout.comm_buffer_end; i++){
       stateinout.buffer[stateinout.buffer_end] = stateinout.comm_buffer[i];
@@ -348,11 +358,21 @@ void render(const renderstate_t& state, int w, int h, addr_t vgatext_base){
   if (state.to_clear == true){
     fillrect(0,0,80,25,0,2,w,h,vgatext_base);
   }
-  // hoh_debug(state.show_cursor);
   drawnumberindec(76,0, state.kp, 8, 0, 2, w, h, vgatext_base);
   renderShell(state,w,h,vgatext_base);
 }
 
+void int2char(int a,char ret[], int l){
+  // int e = 1,buff_end=0;
+  ret[l]='\0';
+  l--;
+  while (a !=0){
+    int c = a%10; //last digit
+    ret[l] = (char) (c+'0');
+    a=a/10;
+    l--;
+  }
+}
 
 int char2int(char num[], int l ){
   int e= 1;
@@ -363,7 +383,6 @@ int char2int(char num[], int l ){
   for(int j = 0; j < l; j++){
     n+= (( (int)num[j] - '0') * e);
     e/=10;
-
   }
 
   return n;
@@ -441,12 +460,12 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 }
 
 static int whichFunction(char *line, int length){
-  char all_fun[7][10] = { "echo","fib","prime","coprime","help","clear","fibprime" }; //all possible functions
-  int num_fun = 7;
+  char all_fun[9][10] = { "echo","fib","prime","coprime","help","clear","fibprime","fscfib","fscfact"}; //all possible functions
+  int num_fun = 9;
   for (int i =0; i<num_fun;i++){
     char *c_f = all_fun[i];
     int l=0;
-    char* name="";
+    // char* name="";
     for(; c_f[l] !='\0';){
       l++;
     }
@@ -597,12 +616,49 @@ static void getResult(shellstate_t &state){
   }else if(*fun == 5){ //clear
     ok = true;
     state.to_clear = true;
-  }else if(*fun==6){ //fibprime
+  }else if(*fun == 6){ //fibprime
+    hoh_debug("Fib Prime");
     char *a = args[0];
     int l=0;
     for(;a[l] !='\0';l++);
     state.fiber_state=1;
     state.fiber_num=char2int(args[0],l);
+  }else if(*fun == 7){ //fscfib
+    hoh_debug("fsc fibonacci");
+    char *a = args[0];
+      int l=0;
+      for(;a[l]!='\0';l++);
+      int k=-1;
+      for (k=0; k<5;k++){
+        if (state.fiber_states[k] == 0){
+          break;
+        }
+      }
+      hoh_debug("FSCFIB assigned to fiber number");
+      hoh_debug(k);
+      state.arg_ret_list[k*4] = (*fun); //The function being called
+      state.arg_ret_list[(k * 4)+1]=0; //isDone?
+      state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
+      state.arg_ret_list[(k * 4)+3]=0; //Return Value
+      state.fiber_states[k] = 1; //Set this to READY
+  }else if(*fun == 8){ //fscfact
+    hoh_debug("fsc factorial");
+    char *a = args[0];
+      int l=0;
+      for(;a[l]!='\0';l++);
+      int k=-1;
+      for (k=0; k<5;k++){
+        if (state.fiber_states[k] == 0){
+          break;
+        }
+      }
+      hoh_debug("FSCFACT assigned to fiber number");
+      hoh_debug(k);
+      state.arg_ret_list[k*4] = (*fun); //The function being called
+      state.arg_ret_list[(k * 4)+1]=0; //isDone?
+      state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
+      state.arg_ret_list[(k * 4)+3]=0; //Return Value
+      state.fiber_states[k] = 1; //Set this to READY
   }else{
     state.to_clear=false; //VERY IMPORTANT STATEMENT!! Otherwise won't stop clearing
   }

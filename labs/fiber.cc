@@ -7,8 +7,8 @@ void fibprime(addr_t* pmain_stack,addr_t* pf_stack,bool* pret,bool* isDone,int* 
   bool& done = *isDone;
   int& num = *fibnum;
   int i;
-  hoh_debug("Before loop");
-  hoh_debug(num);
+  // hoh_debug("Before loop");
+  // hoh_debug(num);
   ret=true;
   for(i=2;i<num;i++){
     hoh_debug(i);
@@ -18,7 +18,9 @@ void fibprime(addr_t* pmain_stack,addr_t* pf_stack,bool* pret,bool* isDone,int* 
       break;
     }else{
       done=false;
+      // hoh_debug("Before the saverestore statement in function.");
       stack_saverestore(f_stack,main_stack);
+      // hoh_debug("After the saverestore statement in function.");
     }
   }
 
@@ -54,12 +56,13 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_st
       }else{
         ans = "Fiber Result: It is not prime";
       }
-      int l=0;
       shellstate.buffer_end--;
-      for(;ans[l]!='\0';){
-        shellstate.buffer[shellstate.buffer_end++]=ans[l];
-        l++;
-      };
+      addToBuffer(shellstate,ans);
+      // int l=0;
+      // for(;ans[l]!='\0';){
+      //   shellstate.buffer[shellstate.buffer_end++]=ans[l];
+      //   l++;
+      // };
       shellstate.buffer[shellstate.buffer_end++]='\n';
       shellstate.buffer[shellstate.buffer_end++]='$';
     }
