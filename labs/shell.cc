@@ -460,8 +460,8 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
 }
 
 static int whichFunction(char *line, int length){
-  char all_fun[9][10] = { "echo","fib","prime","coprime","help","clear","fibprime","fscfib","fscfact"}; //all possible functions
-  int num_fun = 9;
+  char all_fun[10][10] = { "echo","fib","prime","coprime","help","clear","fibprime","fscfib","fscfact","fscprime"}; //all possible functions
+  int num_fun = 10;
   for (int i =0; i<num_fun;i++){
     char *c_f = all_fun[i];
     int l=0;
@@ -568,18 +568,36 @@ static void getResult(shellstate_t &state){
     int l = 0;
     for(;number[l]!='\0';l++);
     int ans = fibo(char2int(number,l));
-    int e = 1;
-    int ans2 = ans;
-    while(ans2!=0){
-      e*=10;
-      ans2/=10;
+    if (ans == 0){
+      state.buffer[state.buffer_end++]='0';
+    }else{
+      int temp=ans;
+      l=0;
+      while(temp!=0){
+        temp/=10;
+        l++;
+      }
+      char * ans2 ;
+      int2char(ans,ans2,l);
+      for(int j=0;j<l;j++){
+        state.buffer[state.buffer_end++]=ans2[j];
+      }
     }
-    while(ans !=0){
-      state.buffer[state.buffer_end] = hex2char(ans/e);
-      state.buffer_end++;
-      ans%=e;
-      e/=10;
-    }
+
+    // int e = 1;
+    // int ans2 = ans;
+    // while(ans2!=0){
+    //   e*=10;
+    //   ans2/=10;
+    // }
+    // // int l=0;
+
+    // while(ans !=0){
+    //   state.buffer[state.buffer_end] = hex2char(ans/e);
+    //   state.buffer_end++;
+    //   ans%=e;
+    //   e/=10;
+    // }
   }else if (*fun == 2){
     ok = true;
     char* number = args[0];
@@ -607,7 +625,7 @@ static void getResult(shellstate_t &state){
     state.coroutine_arg=char2int(args[0],l);
   }else if(*fun == 4){ //help
     ok=true;
-    char h_s[]="Welcome to the help section\nhelp to get the help section\necho [string]  to echo the string\nfib [num] gets fibonacci for num less than 25\nprime [num] to check if a number is prime\nclear to clear the screen\n";
+    char h_s[]="Welcome to the help section\nhelp to get the help section\necho [string]  to echo the string\nfib [num] gets fibonacci for num less than 47\nprime [num] to check if a number is prime\nclear to clear the screen\ncoprime [num] to get check if a number is prime using co-routine\nfibprime [num] to check if a number is prime using fibers\nfscfact [num] to get the factorial mod (num+1) of number using fiber scheduler\nfscfib [num] to get the fibonacci of the num'th number < 47 using fiber scheduler\nfscprime to check if a number is prime using fiber scheduler";
     char* p;
     for (p = h_s; *p !='\0';p++){
       state.buffer[state.buffer_end++] = *p;
@@ -653,6 +671,24 @@ static void getResult(shellstate_t &state){
         }
       }
       hoh_debug("FSCFACT assigned to fiber number");
+      hoh_debug(k);
+      state.arg_ret_list[k*4] = (*fun); //The function being called
+      state.arg_ret_list[(k * 4)+1]=0; //isDone?
+      state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
+      state.arg_ret_list[(k * 4)+3]=0; //Return Value
+      state.fiber_states[k] = 1; //Set this to READY
+  }else if(*fun== 9){ //fscprime
+    hoh_debug("fsc prime");
+    char *a = args[0];
+      int l=0;
+      for(;a[l]!='\0';l++);
+      int k=-1;
+      for (k=0; k<5;k++){
+        if (state.fiber_states[k] == 0){
+          break;
+        }
+      }
+      hoh_debug("FSCPRIME assigned to fiber number");
       hoh_debug(k);
       state.arg_ret_list[k*4] = (*fun); //The function being called
       state.arg_ret_list[(k * 4)+1]=0; //isDone?
