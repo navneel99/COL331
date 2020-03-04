@@ -459,6 +459,31 @@ static void renderShell(const renderstate_t &state, int w, int h, addr_t vgatext
   }
 }
 
+// Returns index of the free fiber. -1 if all full. -2 if 3 invocations already done.
+static int checkLimits(const shellstate_t state, int f_num){
+  int k=-1;
+  int l=-3;
+  for (int i=0; i< 5;i++){
+    if (state.fiber_states[i]==0){
+      k=i;
+      break;
+    }
+  }
+  for(int i=0;i<5;i++){
+    if (state.arg_ret_list[4*i]==f_num){
+      l++;
+    }
+  }
+  if (l<0 && k!=-1){
+    return k;
+  }else if(k==-1){
+    return -1;
+  }else{
+    return -2;
+  }
+
+}
+
 static int whichFunction(char *line, int length){
   char all_fun[10][10] = { "echo","fib","prime","coprime","help","clear","fibprime","fscfib","fscfact","fscprime"}; //all possible functions
   int num_fun = 10;
@@ -641,60 +666,62 @@ static void getResult(shellstate_t &state){
     for(;a[l] !='\0';l++);
     state.fiber_state=1;
     state.fiber_num=char2int(args[0],l);
-  }else if(*fun == 7){ //fscfib
+  }else if(*fun == 7 ||*fun == 8||*fun == 9){ //fscfib / fscfact/fscprime
     hoh_debug("fsc fibonacci");
     char *a = args[0];
       int l=0;
       for(;a[l]!='\0';l++);
-      int k=-1;
-      for (k=0; k<5;k++){
-        if (state.fiber_states[k] == 0){
-          break;
+      int k=checkLimits(state,(*fun));
+      if (k>=0){
+        hoh_debug("FSCFIB assigned to fiber number");
+        hoh_debug(k);
+        state.arg_ret_list[k*4] = (*fun); //The function being called
+        state.arg_ret_list[(k * 4)+1]=0; //isDone?
+        state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
+        state.arg_ret_list[(k * 4)+3]=0; //Return Value
+        state.fiber_states[k] = 1; //Set this to READY
+      }else if(k==-1){
+        const char * temp = "Sorry All 5 fibers are filled. Try again later";
+        for(int j=0; temp[j]!='\0';j++){
+          state.buffer[state.buffer_end++] = temp[j];
+        }
+      }else{
+        const char * temp = "Sorry 3 invocations of function already running. Try again later";
+        for(int j=0; temp[j]!='\0';j++){
+          state.buffer[state.buffer_end++] = temp[j];
         }
       }
-      hoh_debug("FSCFIB assigned to fiber number");
-      hoh_debug(k);
-      state.arg_ret_list[k*4] = (*fun); //The function being called
-      state.arg_ret_list[(k * 4)+1]=0; //isDone?
-      state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
-      state.arg_ret_list[(k * 4)+3]=0; //Return Value
-      state.fiber_states[k] = 1; //Set this to READY
-  }else if(*fun == 8){ //fscfact
-    hoh_debug("fsc factorial");
-    char *a = args[0];
-      int l=0;
-      for(;a[l]!='\0';l++);
-      int k=-1;
-      for (k=0; k<5;k++){
-        if (state.fiber_states[k] == 0){
-          break;
-        }
-      }
-      hoh_debug("FSCFACT assigned to fiber number");
-      hoh_debug(k);
-      state.arg_ret_list[k*4] = (*fun); //The function being called
-      state.arg_ret_list[(k * 4)+1]=0; //isDone?
-      state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
-      state.arg_ret_list[(k * 4)+3]=0; //Return Value
-      state.fiber_states[k] = 1; //Set this to READY
-  }else if(*fun== 9){ //fscprime
-    hoh_debug("fsc prime");
-    char *a = args[0];
-      int l=0;
-      for(;a[l]!='\0';l++);
-      int k=-1;
-      for (k=0; k<5;k++){
-        if (state.fiber_states[k] == 0){
-          break;
-        }
-      }
-      hoh_debug("FSCPRIME assigned to fiber number");
-      hoh_debug(k);
-      state.arg_ret_list[k*4] = (*fun); //The function being called
-      state.arg_ret_list[(k * 4)+1]=0; //isDone?
-      state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
-      state.arg_ret_list[(k * 4)+3]=0; //Return Value
-      state.fiber_states[k] = 1; //Set this to READY
+
+          // }else if(*fun == 8){ //fscfact
+          //   hoh_debug("fsc factorial");
+          //   char *a = args[0];
+          //     int l=0;
+          //     for(;a[l]!='\0';l++);
+          //      int k=checkLimits(state,(*fun));
+          //     if (k>=0){
+          //       hoh_debug("FSCFACT assigned to fiber number");
+          //       hoh_debug(k);
+          //       state.arg_ret_list[k*4] = (*fun); //The function being called
+          //       state.arg_ret_list[(k * 4)+1]=0; //isDone?
+          //       state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
+          //       state.arg_ret_list[(k * 4)+3]=0; //Return Value
+          //       state.fiber_states[k] = 1; //Set this to READY
+          //     }
+          // }else if(*fun== 9){ //fscprime
+          //   hoh_debug("fsc prime");
+          //   char *a = args[0];
+          //   int l=0;
+          //   for(;a[l]!='\0';l++);
+          //   int k=checkLimits(state,(*fun));
+          //   if (k>=0){
+          //     hoh_debug("FSCPRIME assigned to fiber number");
+          //     hoh_debug(k);
+          //     state.arg_ret_list[k*4] = (*fun); //The function being called
+          //     state.arg_ret_list[(k * 4)+1]=0; //isDone?
+          //     state.arg_ret_list[(k * 4)+2]=char2int(args[0],l); //The number
+          //     state.arg_ret_list[(k * 4)+3]=0; //Return Value
+          //     state.fiber_states[k] = 1; //Set this to READY
+          //   }  
   }else{
     state.to_clear=false; //VERY IMPORTANT STATEMENT!! Otherwise won't stop clearing
   }

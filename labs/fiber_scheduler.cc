@@ -141,8 +141,7 @@ void shell_step_fiber_scheduler(shellstate_t& shellstate, addr_t stackptrs[], si
         shellstate.fiber_states[fiber_to_run]++;
     }else if (shellstate.fiber_states[fiber_to_run] == 2){
         stack_saverestore(stackptrs[0],stackptrs[fiber_to_run+1]);
-        if(shellstate.arg_ret_list[4*(fiber_to_run)+1] == 1){
-            shellstate.fiber_states[fiber_to_run]=0;
+        if(shellstate.arg_ret_list[4*(fiber_to_run)+1] == 1){ //If Done
             int ans = shellstate.arg_ret_list[4*(fiber_to_run)+3];
             int org_num = shellstate.arg_ret_list[4*(fiber_to_run)+2];
             hoh_debug("----");
@@ -219,6 +218,10 @@ void shell_step_fiber_scheduler(shellstate_t& shellstate, addr_t stackptrs[], si
 
             shellstate.buffer[shellstate.buffer_end++]='\n';
             shellstate.buffer[shellstate.buffer_end++]='$';
+
+            //Reset the fiber state and the function
+            shellstate.fiber_states[fiber_to_run]=0;
+            shellstate.arg_ret_list[4*fiber_to_run]=0;
         }
 
     }
