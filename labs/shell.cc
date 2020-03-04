@@ -681,12 +681,12 @@ static void getResult(shellstate_t &state){
         state.arg_ret_list[(k * 4)+3]=0; //Return Value
         state.fiber_states[k] = 1; //Set this to READY
       }else if(k==-1){
-        const char * temp = "Sorry All 5 fibers are filled. Try again later";
+        const char * temp = "Sorry All 5 fibers are filled. Try again later\n";
         for(int j=0; temp[j]!='\0';j++){
           state.buffer[state.buffer_end++] = temp[j];
         }
       }else{
-        const char * temp = "Sorry 3 invocations of function already running. Try again later";
+        const char * temp = "Sorry 3 invocations of function already running. Try again later\n";
         for(int j=0; temp[j]!='\0';j++){
           state.buffer[state.buffer_end++] = temp[j];
         }
