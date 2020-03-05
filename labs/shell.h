@@ -21,9 +21,10 @@ struct shellstate_t{
 
     //Stuff for fiber
     int fiber_state=0;//dead=0,start=1,ready=2,finished=3
-    int fiber_done;
+    bool fiber_done;
     int fiber_num;
-    int fiber_ret;
+    bool fiber_ret;
+    bool onlyOnce=true;
 
     //Stuff for the fiber_scheduler
 
