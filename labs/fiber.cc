@@ -34,7 +34,7 @@ void fibprime(addr_t* pmain_stack,addr_t* pf_stack,bool* pret,bool* isDone,int* 
 }
 
 
-void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, addr_t& f_stack, addr_t f_array, uint32_t f_arraysize){
+void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, preempt_t& preempt,addr_t& f_stack, addr_t f_array, uint32_t f_arraysize, dev_lapic_t& lapic){
   if (shellstate.fiber_state==0){
   }else if(shellstate.fiber_state==1){
     stack_init5(f_stack,f_array,f_arraysize,&fibprime,&main_stack,&f_stack,&shellstate.fiber_ret,&shellstate.fiber_done,&shellstate.fiber_num);
