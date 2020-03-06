@@ -650,7 +650,7 @@ static void getResult(shellstate_t &state){
     state.coroutine_arg=char2int(args[0],l);
   }else if(*fun == 4){ //help
     ok=true;
-    char h_s[]="Welcome to the help section\nhelp to get the help section\necho [string]  to echo the string\nfib [num] gets fibonacci for num less than 47\nprime [num] to check if a number is prime\nclear to clear the screen\ncoprime [num] to get check if a number is prime using co-routine\nfibprime [num] to check if a number is prime using fibers\nfscfact [num] to get the factorial mod (num+1) of number using fiber scheduler\nfscfib [num] to get the fibonacci of the num'th number < 47 using fiber scheduler\nfscprime to check if a number is prime using fiber scheduler";
+    char h_s[]="Welcome to the help section\nhelp to get the help section\necho [string]  to echo the string\nfib [num] gets fibonacci for num less than 47\nprime [num] to check if a number is prime\nclear to clear the screen\ncoprime [num] to get check if a number is prime using co-routine\nfibprime [num] to check if a number is prime using fibers\nfscfact [num] to get the factorial mod (num+1) of number using fiber scheduler\nfscfib [num] to get the fibonacci of the num'th number < 47 using fiber scheduler\nfscprime [num] to check if a number is prime using fiber scheduler";
     char* p;
     for (p = h_s; *p !='\0';p++){
       state.buffer[state.buffer_end++] = *p;
