@@ -18,18 +18,18 @@ void fibprime(addr_t* pmain_stack,addr_t* pf_stack,bool* pret,bool* isDone,int* 
       break;
     }else{
       done=false;
-      preempt.doing_yield=0;
-      preempt.from_preempt=0;
-      stack_saverestore(f_stack,main_stack);
+      // preempt.doing_yield=0;
+      // preempt.from_preempt=0;
+      // stack_saverestore(f_stack,main_stack);
     }
   }
   hoh_debug("WAA");
   for(;;){
   hoh_debug("here.");
   done=true;
-  preempt.doing_yield=0;
-  preempt.from_preempt=0;
-  stack_saverestore(f_stack,main_stack);
+  // preempt.doing_yield=0;
+  // preempt.from_preempt=0;
+  // stack_saverestore(f_stack,main_stack);
 
   }
 }
