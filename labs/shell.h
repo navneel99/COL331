@@ -24,7 +24,8 @@ struct shellstate_t{
     bool fiber_done;
     int fiber_num;
     bool fiber_ret;
-    __uint8_t retFromPreempt;
+    __uint8_t fiber_preempt_return;
+    // __uint8_t fiber_preempt_doing_yield;
 
     //Stuff for the fiber_scheduler
 
@@ -37,6 +38,8 @@ struct shellstate_t{
     //int free_q[5]; //queue telling which'th fiber to allocate next
     int fiber_states[5]={0,0,0,0,0}; //list with index i telling th state of fiber i
     //Allowed states 0: DEAD 1: READY 2:RUNNING
+    __uint8_t fsc_preempt_return[5];
+    addr_t fsc_preempt_stored_stack[5];
 
 
 

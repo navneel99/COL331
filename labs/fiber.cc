@@ -39,21 +39,22 @@ void shell_step_fiber(shellstate_t& shellstate, addr_t& main_stack, preempt_t& p
   if (shellstate.fiber_state==0){
   }else if(shellstate.fiber_state==1){
     stack_init6(f_stack,f_array,f_arraysize,&fibprime,&main_stack,&f_stack,&shellstate.fiber_ret,&shellstate.fiber_done,&shellstate.fiber_num,&preempt);
-    shellstate.retFromPreempt=0;
+    shellstate.fiber_preempt_return=0;
     shellstate.fiber_state++;
-    preempt.doing_yield=1;
+    // preempt.doing_yield=1;
   }else{
-    if (shellstate.retFromPreempt==0){
-      // shellstate.retFromPreempt=true;
+    preempt.doing_yield=1;
+    if (shellstate.fiber_preempt_return==0){
+      // shellstate.fiber_preempt_return=true;
       lapic.reset_timer_count(10000000);
       stack_saverestore(main_stack,f_stack);
-    }else if(shellstate.retFromPreempt!=0){
+    }else if(shellstate.fiber_preempt_return!=0){
       lapic.reset_timer_count(10000000);
       stack_saverestore(main_stack,preempt.saved_stack);
     }
     preempt.doing_yield=1;
-    shellstate.retFromPreempt = preempt.from_preempt;
-    hoh_debug("Preempt returnFromPreempt value"<<preempt.from_preempt<<" "<<shellstate.retFromPreempt);
+    shellstate.fiber_preempt_return = preempt.from_preempt;
+    hoh_debug("Preempt returnFromPreempt value"<<preempt.from_preempt<<" "<<shellstate.fiber_preempt_return);
     // fibprime(&main_stack,&f_stack,&shellstate.fiber_ret,&shellstate.fiber_done,&shellstate.fiber_num);
     if (shellstate.fiber_done==true){
       shellstate.fiber_state=0;

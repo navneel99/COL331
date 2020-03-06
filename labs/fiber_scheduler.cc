@@ -1,11 +1,12 @@
 #include "labs/fiber_scheduler.h"
 
-void fib_sch_prime(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,int* fibnum){
+void fib_sch_prime(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,int* fibnum, preempt_t* ppreempt){
   addr_t& main_stack=*pmain_stack;
   addr_t& f_stack=*pf_stack;
   int& ret = *pret;
   int& done = *isDone;
   int& num = *fibnum;
+  preempt_t& preempt = *ppreempt;
   int i;
   // hoh_debug("Before loop");
   // hoh_debug(num);
@@ -18,29 +19,34 @@ void fib_sch_prime(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,in
       break;
     }else{
       done=0;
+      preempt.doing_yield=0;
+      preempt.from_preempt=0;
       // hoh_debug("Before the saverestore statement in function.");
       stack_saverestore(f_stack,main_stack);
       // hoh_debug("After the saverestore statement in function.");
     }
   }
 
-  // for(;;){
+  for(;;){
   // if (ret != false){
   //   ret = true;
   // }
   done=1;
+  preempt.doing_yield=0;
+  preempt.from_preempt=0;
   stack_saverestore(f_stack,main_stack);
-  // }
+  }
 }
 
 
-void fib_sch_factorial(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,int* fibnum){
+void fib_sch_factorial(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,int* fibnum, preempt_t* ppreempt){
     // void fib_sch_factorial(addr_t* pmain_stack,){
     addr_t& main_stack=*pmain_stack;
     addr_t& f_stack=*pf_stack;
     int& ret = *pret;
     int& done = *isDone;
     int& num = *fibnum;
+    preempt_t& preempt = *ppreempt;
     int i;
     
     ret = 1;
@@ -48,28 +54,37 @@ void fib_sch_factorial(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDon
     for (i=1;i<=num;i++){
         ret = (ret*(i%(num+1)))%(num+1);
         done=0;
+        preempt.doing_yield=0;
+        preempt.from_preempt=0;
         stack_saverestore(f_stack,main_stack);
     }
     done=1;
+    preempt.doing_yield=0;
+    preempt.from_preempt=0;
     stack_saverestore(f_stack,main_stack);
 }
 
 
-void fib_sch_fibonacci(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,int* fibnum){
+void fib_sch_fibonacci(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDone,int* fibnum, preempt_t* ppreempt){
     addr_t& main_stack=*pmain_stack;
     addr_t& f_stack=*pf_stack;
     int& ret = *pret;
     int& done = *isDone;
     int& num = *fibnum;
+    preempt_t& preempt = *ppreempt;
     int i;
 
     if (num==0){
         done = 1;
         ret = 0;
+        preempt.doing_yield=0;
+        preempt.from_preempt=0;
         stack_saverestore(f_stack,main_stack);
     }else if (num==2 || num==1){
         done = 1;
         ret = 1;
+        preempt.doing_yield=0;
+        preempt.from_preempt=0;
         stack_saverestore(f_stack,main_stack);
     }else{
         int n1=1, n2=1;
@@ -82,10 +97,14 @@ void fib_sch_fibonacci(addr_t* pmain_stack,addr_t* pf_stack,int* pret,int* isDon
             n1 = n2;
             n2 = temp;
             done = false;
+            preempt.doing_yield=0;
+            preempt.from_preempt=0;
             stack_saverestore(f_stack,main_stack);
         }
         done=true;
         ret = n2;
+        preempt.doing_yield=0;
+        preempt.from_preempt=0;
         stack_saverestore(f_stack,main_stack);
     }
 }
@@ -132,15 +151,33 @@ void shell_step_fiber_scheduler(shellstate_t& shellstate, addr_t& main_stack,pre
     int fiber_to_run = scheduler_output(shellstate); //outputs which fiber index to process
     if (shellstate.fiber_states[fiber_to_run] == 1){
         if (shellstate.arg_ret_list[4*fiber_to_run] == 8){
-            stack_init5(stackptrs[fiber_to_run+1],&arrays[(fiber_to_run+1)*sz_fr_fiber],sz_fr_fiber,&fib_sch_factorial,&stackptrs[0],&stackptrs[fiber_to_run+1],&shellstate.arg_ret_list[(4* fiber_to_run)+3],&shellstate.arg_ret_list[(4* fiber_to_run)+1],&shellstate.arg_ret_list[(4* fiber_to_run)+2]);
+            stack_init6(stackptrs[fiber_to_run],&arrays[(fiber_to_run)*sz_fr_fiber],sz_fr_fiber,&fib_sch_factorial,&main_stack,&stackptrs[fiber_to_run],&shellstate.arg_ret_list[(4* fiber_to_run)+3],&shellstate.arg_ret_list[(4* fiber_to_run)+1],&shellstate.arg_ret_list[(4* fiber_to_run)+2],&preempt);
         }else if(shellstate.arg_ret_list[4*fiber_to_run] == 7){
-            stack_init5(stackptrs[fiber_to_run+1],&arrays[(fiber_to_run+1)*sz_fr_fiber],sz_fr_fiber,&fib_sch_fibonacci,&stackptrs[0],&stackptrs[fiber_to_run+1],&shellstate.arg_ret_list[(4* fiber_to_run)+3],&shellstate.arg_ret_list[(4* fiber_to_run)+1],&shellstate.arg_ret_list[(4* fiber_to_run)+2]);
+            stack_init6(stackptrs[fiber_to_run],&arrays[(fiber_to_run)*sz_fr_fiber],sz_fr_fiber,&fib_sch_fibonacci,&main_stack,&stackptrs[fiber_to_run],&shellstate.arg_ret_list[(4* fiber_to_run)+3],&shellstate.arg_ret_list[(4* fiber_to_run)+1],&shellstate.arg_ret_list[(4* fiber_to_run)+2],&preempt);
         }else{
-            stack_init5(stackptrs[fiber_to_run+1],&arrays[(fiber_to_run+1)*sz_fr_fiber],sz_fr_fiber,&fib_sch_prime,&stackptrs[0],&stackptrs[fiber_to_run+1],&shellstate.arg_ret_list[(4* fiber_to_run)+3],&shellstate.arg_ret_list[(4* fiber_to_run)+1],&shellstate.arg_ret_list[(4* fiber_to_run)+2]);
+            stack_init6(stackptrs[fiber_to_run],&arrays[(fiber_to_run)*sz_fr_fiber],sz_fr_fiber,&fib_sch_prime,&main_stack,&stackptrs[fiber_to_run],&shellstate.arg_ret_list[(4* fiber_to_run)+3],&shellstate.arg_ret_list[(4* fiber_to_run)+1],&shellstate.arg_ret_list[(4* fiber_to_run)+2],&preempt);
         }
         shellstate.fiber_states[fiber_to_run]++;
+        shellstate.fsc_preempt_return[fiber_to_run]=0;
+        hoh_debug("Initialized");
     }else if (shellstate.fiber_states[fiber_to_run] == 2){
-        stack_saverestore(stackptrs[0],stackptrs[fiber_to_run+1]);
+        hoh_debug("In Running State.");
+        preempt.doing_yield=1;
+        if (shellstate.fsc_preempt_return[fiber_to_run]==0){
+            lapic.reset_timer_count(1000000);
+            stack_saverestore(main_stack,stackptrs[fiber_to_run]);
+            hoh_debug("First Iteration.");
+        }else if (shellstate.fsc_preempt_return[fiber_to_run] !=0){
+            lapic.reset_timer_count(1000000);
+            stack_saverestore(main_stack,shellstate.fsc_preempt_stored_stack[fiber_to_run]);
+        }
+        preempt.doing_yield=1;
+        hoh_debug("From Preempt"<<preempt.from_preempt);
+        shellstate.fsc_preempt_return[fiber_to_run] = preempt.from_preempt;
+        if (preempt.from_preempt == 1){
+        shellstate.fsc_preempt_stored_stack[fiber_to_run] = preempt.saved_stack;
+        }
+        // stack_saverestore(stackptrs[0],stackptrs[fiber_to_run+1]);
         if(shellstate.arg_ret_list[4*(fiber_to_run)+1] == 1){ //If Done
             int ans = shellstate.arg_ret_list[4*(fiber_to_run)+3];
             int org_num = shellstate.arg_ret_list[4*(fiber_to_run)+2];
