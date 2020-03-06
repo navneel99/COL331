@@ -26,8 +26,8 @@
 struct preempt_t{
   // your data structure, if any
   addr_t saved_stack; //The address to get back all registers.
-  uint8_t doing_yield; //Am I currently doing yield? 
-
+  __uint8_t doing_yield; //Am I currently doing yield? 
+  __uint8_t from_preempt; //Will set to 1, if I return using preempt
 };
 
 
@@ -51,7 +51,12 @@ struct preempt_t{
       "  popl  %eax                       \n\t"\
       "  popl  %ecx                       \n\t"\
       "  popl  %edx                       \n\t"\
+      "                                \n\t"\
       "                                   \n\t"\
+      "  movl $0, %gs:" STR(core_offset_preempt) "+5 \n\t"\
+      "  #movl $1, %gs:" STR(core_offset_preempt) "+4 \n\t"\
+      "  cmp  $0, %gs:" STR(core_offset_preempt) "+4 \n\t"\
+      "  je iret_toring0                  \n\t"\
       "                                   \n\t"\
       "  pushl %ebp                                 \n\t"\
       "  pushl %edx                       \n\t"\
@@ -69,6 +74,8 @@ struct preempt_t{
       "  pushl %ebp                       \n\t"\
       "  pushl $1f                        \n\t"\
       "  sti                              \n\t"\
+      "                                   \n\t"\
+      "  movl  $1,%gs:" STR(core_offset_preempt) "+5 \n\t"\
       "  movl  %esp ,%gs:" STR(core_offset_preempt) "+0 \n\t"\
       "                                   \n\t"\
       "  movl  %gs:" STR(core_offset_mainstack) ", %esp \n\t"\
@@ -93,8 +100,7 @@ struct preempt_t{
       )                                        \
 
 
-      // "  cmp  $0, %gs:" STR(core_offset_preempt) "+4 \n\t"\ 
-      // "  jz iret_toring0                  \n\t"\ 
+
 
 
       // "  fxrstor (%esp)                                 \n\t"\   

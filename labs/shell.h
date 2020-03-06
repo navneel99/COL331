@@ -24,7 +24,7 @@ struct shellstate_t{
     bool fiber_done;
     int fiber_num;
     bool fiber_ret;
-    bool onlyOnce=true;
+    __uint8_t retFromPreempt;
 
     //Stuff for the fiber_scheduler
 
